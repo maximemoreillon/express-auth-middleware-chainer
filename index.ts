@@ -1,0 +1,50 @@
+import express, { NextFunction, Request, RequestHandler } from "express"
+import { Response } from "express-serve-static-core"
+
+const app = express()
+
+const middleware1Factory = () => {
+  console.log("middleware1 initialized")
+  return (req: Request, res: Response, next: NextFunction) => {
+    console.log("middleware1")
+    next()
+  }
+}
+
+const middleware2 = (req: Request, res: Response, next: NextFunction) => {
+  console.log("middleware2")
+  res.locals.user = {
+    id: "123",
+  }
+  next()
+}
+
+const middleware3 = (req: Request, res: Response, next: NextFunction) => {
+  console.log("middleware3")
+  next()
+}
+
+const authMiddlewareChainer = (middlewares: RequestHandler[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    for (const middleware of middlewares) {
+      // Not passing the next function to individual middlewares
+      middleware(req, res, () => {})
+      if (res.locals.user) return next()
+    }
+    if (!res.locals.user) throw "User identification failed"
+  }
+}
+
+const middlewareChain = authMiddlewareChainer([
+  middleware1Factory(),
+  middleware2,
+  middleware3,
+])
+
+app.get("/", middlewareChain, (req, res) => {
+  res.send({ user: res.locals })
+})
+
+app.listen(7070, () => {
+  console.log("App listening")
+})
