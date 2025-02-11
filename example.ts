@@ -2,7 +2,7 @@ import express, { NextFunction, Response, Request } from "express"
 import { authMiddlewareChainer } from "./"
 const app = express()
 
-const middleware1Factory = () => {
+const middlewareFactory = () => {
   console.log("middleware1 initialized")
   return (req: Request, res: Response, next: NextFunction) => {
     console.log("middleware1")
@@ -23,8 +23,19 @@ const middleware3 = (req: Request, res: Response, next: NextFunction) => {
   next()
 }
 
+const asyncMiddlewareFactory = () => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    console.log("Async middleware")
+    const response = await fetch("https://maximemoreillon.com")
+    const data = await response.text()
+    console.log(data)
+    next()
+  }
+}
+
 const middlewareChain = authMiddlewareChainer([
-  middleware1Factory(),
+  middlewareFactory(),
+  asyncMiddlewareFactory(),
   middleware2,
   middleware3,
 ])
