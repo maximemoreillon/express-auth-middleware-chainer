@@ -1,5 +1,7 @@
 # Express middleware chainer
 
+A simple Express middleware used to chain authentication middlewares.
+
 ## Usage example
 
 ```ts
